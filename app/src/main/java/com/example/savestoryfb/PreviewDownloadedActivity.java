@@ -13,6 +13,8 @@ public class PreviewDownloadedActivity extends AppCompatActivity {
         setContentView(R.layout.activity_preview_downloaded);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
     }
 
 

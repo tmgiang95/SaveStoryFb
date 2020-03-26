@@ -6,7 +6,7 @@
         android:title="@string/download_image"
         android:id="@+id/mniImageDownloaded"
         android:orderInCategory="200"
-        android:icon="@drawable/ic_downloadec"
+        android:icon="@drawable/ic_gallery"
         app:showAsAction="ifRoom" />
     <item
         android:title="@string/download_image"

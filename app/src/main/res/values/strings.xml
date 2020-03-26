@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SaveStoryFb</string>
+    <string name="app_name">Fb Story Saver</string>
     <string name="download_image">Download Image</string>
     <string name="permission_dialog_title">Please grant those permissions"</string>
     <string name="permission_camera_gallery">Write External Storage permissions are required to do the task.</string>

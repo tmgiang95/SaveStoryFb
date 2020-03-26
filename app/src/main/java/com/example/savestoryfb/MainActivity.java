@@ -59,32 +59,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(MainActivity.this, "Downloading ...", Toast.LENGTH_LONG).show();
-                webView.loadUrl("javascript:window.HTMLOUT.checkType([...document.querySelectorAll(\"#story_viewer_content div>img\")][1].parentElement.getAttribute(\"data-store\")  == null ? 1 : 0)");//img
+                webView.loadUrl("javascript:window.HTMLOUT.processHTML((()=>{var a = [...document.querySelectorAll(\"#story_viewer_content div>img\")];var v = a[1].parentElement.getAttribute(\"data-store\");return v == null? a.sort((a,b) => b.naturalHeight - a.naturalHeight)[0].src: JSON.parse(v).src})())");//img
             }
         });
         webView.getSettings().setJavaScriptEnabled(true);
 
 
         webView.addJavascriptInterface(new MyJavaScriptInterface(getBaseContext(), new OnHandleCheckTypeToDownload() {
-            @Override
-            public void onSuccessCheckType(final String type) {
-                Log.d("giangtm1", "onSuccess: " + type);
-                if (type.equals("1")) {
-                    webView.post(new Runnable() {
-                        public void run() {
-                            webView.loadUrl("javascript:window.HTMLOUT.processHTML( [...document.querySelectorAll(\"#story_viewer_content div>img\")].sort((a,b) => b.naturalHeight - a.naturalHeight)[0].src," + type + ")");//img
-                        }
-                    });
-
-                } else {
-                    webView.post(new Runnable() {
-                        public void run() {
-                            webView.loadUrl("javascript:window.HTMLOUT.processHTML(JSON.parse([...document.querySelectorAll(\"#story_viewer_content div>img\")][1].parentElement.getAttribute(\"data-store\")).src," + type + ")");//video
-                        }
-                    });
-                }
-            }
-
             @Override
             public void onSuccessCheckStorySite(final int type) {
                 Log.d("giangtm1", "check: " + type);
@@ -101,13 +82,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDownloading(final String url, int type) {
-                if (type == 1) {
-                    saveimage(url);
-                } else {
-                    saveVideo(url);
-                }
-
+            public void onDownloading(final String url) {
+                saveFile(url);
             }
         }), "HTMLOUT");
 
@@ -124,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void saveVideo(final String url) {
+    public void saveFile(final String url) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -132,14 +108,15 @@ public class MainActivity extends AppCompatActivity {
 
                     String storagePath = APP_FOLDER_URL;
 
-                    String fileName = System.currentTimeMillis() + ".mp4";
-                    File f = new File(storagePath, fileName);
 
                     OkHttpClient client = new OkHttpClient();
                     Request request = new Request.Builder()
                             .url(url)
                             .build();
                     Response response = client.newCall(request).execute();
+                    String extension = response.header("content-type").split("/")[1];
+                    String fileName = System.currentTimeMillis() + "." + extension;
+                    File f = new File(storagePath, fileName);
                     InputStream inputStream = response.body().byteStream();
                     FileOutputStream fos = new FileOutputStream(f);
                     byte[] buffer = new byte[1024];
@@ -155,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
-                    MediaScannerConnection.scanFile(getApplicationContext(), new String[]{APP_FOLDER_URL + "/" + fileName}, new String[]{"mp4"}, null);
+                    MediaScannerConnection.scanFile(getApplicationContext(), new String[]{APP_FOLDER_URL + "/" + fileName}, new String[]{extension}, null);
 
 
                 } catch (IOException e) {
@@ -166,39 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void saveimage(final String url) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    OkHttpClient client = new OkHttpClient();
-                    Request request = new Request.Builder()
-                            .url(url)
-                            .build();
-                    Response response = client.newCall(request).execute();
-                    InputStream inputStream = response.body().byteStream();
-                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                    String fileName = APP_FOLDER_URL + "/" + System.currentTimeMillis() + ".jpg";
-                    try (FileOutputStream out = new FileOutputStream(fileName)) {
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-                        // PNG is a lossless format, the compression factor (100) is ignored
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this, "Download success !!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                        MediaScannerConnection.scanFile(getApplicationContext(), new String[]{fileName}, new String[]{"image/jpeg"}, null);
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
 
     public void initAppFolder() {
         File folder = new File(Environment.getExternalStorageDirectory() +
@@ -207,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
             folder.mkdirs();
         }
     }
+
     /**
      * Handles the result of the request for permissions.
      */
@@ -231,34 +176,35 @@ public class MainActivity extends AppCompatActivity {
         postRequestPermissionsResult(requestCode, false);
     }
 
-    public void requestPermission(){
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(
-                                this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                            // If we should give explanation of requested permissions
-                            // Show an alert dialog here with request explanation
-                            showAlertOkCancel(R.string.permission_dialog_title, R.string.permission_camera_gallery, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    ActivityCompat.requestPermissions(MainActivity.this,
-                                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                            100);
-                                }
-                            }, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    postRequestPermissionsResult(100, false);
-                                }
-                            });
-                        } else {
-                            ActivityCompat.requestPermissions(this,
-                                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    100);
-                        }
+    public void requestPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // If we should give explanation of requested permissions
+                // Show an alert dialog here with request explanation
+                showAlertOkCancel(R.string.permission_dialog_title, R.string.permission_camera_gallery, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                100);
                     }
+                }, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        postRequestPermissionsResult(100, false);
+                    }
+                });
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        100);
+            }
+        }
 
     }
+
     protected void showAlertOkCancel(@StringRes int titleId
             , @StringRes int messageId
             , final DialogInterface.OnClickListener okClickListener
@@ -270,9 +216,11 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(android.R.string.cancel, cancelClickListener)
                 .show();
     }
+
     protected void postRequestPermissionsResult(final int reqCd, final boolean result) {
         Log.d("giangtm1", "postRequestPermissionsResult: reqCd=" + reqCd + ", result=" + result);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -284,8 +232,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.mniImageDownloaded:
-                Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
-                startActivity(myIntent);
+//                Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
+//                startActivity(myIntent);
+                Intent intent = new Intent();
+                intent.setAction(android.content.Intent.ACTION_VIEW);
+                intent.setType("image/*");
+                startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -306,15 +258,9 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         @SuppressWarnings("unused")
-        public void processHTML(String url, int type) {
+        public void processHTML(String url) {
             Log.d("giangtm1", "processHTML: " + url);
-            onHandleCheckTypeToDownload.onDownloading(url, type);
-        }
-
-        @JavascriptInterface
-        @SuppressWarnings("unused")
-        public void checkType(String url) {
-            onHandleCheckTypeToDownload.onSuccessCheckType(url);
+            onHandleCheckTypeToDownload.onDownloading(url);
         }
 
         @JavascriptInterface
