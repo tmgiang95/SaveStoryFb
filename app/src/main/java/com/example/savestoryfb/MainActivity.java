@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -47,6 +48,10 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (android.os.Build.VERSION.SDK_INT <= Build.VERSION_CODES.M){
+            initAppFolder();
+        }
+        initAppFolder();
         setContentView(R.layout.activity_main);
         webView = findViewById(R.id.WebView1);
         btnDownload = findViewById(R.id.btnDownload);
@@ -91,7 +96,7 @@ public class MainActivity extends BaseActivity {
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
-                webView.loadUrl("javascript:window.HTMLOUT.detectStorySite([...document.querySelectorAll(\"#story_viewer_content div>img\")].length)");//img
+                webView.loadUrl("javascript:window.HTMLOUT.detectStorySite(document.querySelectorAll(\"#story_viewer_content div>img\").length)");//img
 
             }
         });
