@@ -3,20 +3,12 @@ package com.example.savestoryfb;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.support.v4.app.ActivityCompat;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -27,39 +19,48 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.savestoryfb.previewscreen.PreviewDownloadedActivity;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     public static final String APP_FOLDER_URL = Environment.getExternalStorageDirectory() + File.separator + "FacebookStories";
+    public static final String TAG = "giangtm1";
+
     WebView webView;
     String HTTP_URL = "https://www.fb.com";
     Button btnDownload;
+    RelativeLayout rvLoading;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestPermission();
         setContentView(R.layout.activity_main);
         webView = findViewById(R.id.WebView1);
         btnDownload = findViewById(R.id.btnDownload);
+        rvLoading = findViewById(R.id.rvLoading);
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Downloading ...", Toast.LENGTH_LONG).show();
-                webView.loadUrl("javascript:window.HTMLOUT.processHTML((()=>{var a = [...document.querySelectorAll(\"#story_viewer_content div>img\")];var v = a[1].parentElement.getAttribute(\"data-store\");return v == null? a.sort((a,b) => b.naturalHeight - a.naturalHeight)[0].src: JSON.parse(v).src})())");//img
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    requestPermission();
+                } else {
+                    Toast.makeText(MainActivity.this, "Downloading ...", Toast.LENGTH_LONG).show();
+                    webView.loadUrl("javascript:window.HTMLOUT.processHTML((()=>{var a = [...document.querySelectorAll(\"#story_viewer_content div>img\")];var v = a[1].parentElement.getAttribute(\"data-store\");return v == null? a.sort((a,b) => b.naturalHeight - a.naturalHeight)[0].src: JSON.parse(v).src})())");
+                }
             }
         });
         webView.getSettings().setJavaScriptEnabled(true);
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new MyJavaScriptInterface(getBaseContext(), new OnHandleCheckTypeToDownload() {
             @Override
             public void onSuccessCheckStorySite(final int type) {
-                Log.d("giangtm1", "check: " + type);
+                Log.d(TAG, "check: " + type);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -105,35 +106,41 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-
-                    String storagePath = APP_FOLDER_URL;
-
-
                     OkHttpClient client = new OkHttpClient();
                     Request request = new Request.Builder()
                             .url(url)
                             .build();
                     Response response = client.newCall(request).execute();
-                    String extension = response.header("content-type").split("/")[1];
-                    String fileName = System.currentTimeMillis() + "." + extension;
-                    File f = new File(storagePath, fileName);
-                    InputStream inputStream = response.body().byteStream();
-                    FileOutputStream fos = new FileOutputStream(f);
-                    byte[] buffer = new byte[1024];
-                    int len1 = 0;
-                    while ((len1 = inputStream.read(buffer)) > 0) {
-                        fos.write(buffer, 0, len1);
-                    }
-                    fos.close();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, "Download success !!", Toast.LENGTH_SHORT).show();
+                    String contentType = response.header("content-type");
+                    if (contentType != null){
+                        String extension = contentType.split("/")[1];
+                        String fileName = System.currentTimeMillis() + "." + extension;
+                        File f = new File(APP_FOLDER_URL, fileName);
+                        ResponseBody responseBody = response.body();
+                        if (responseBody != null){
+                            InputStream inputStream = responseBody.byteStream();
+                            FileOutputStream fos = new FileOutputStream(f);
+                            byte[] buffer = new byte[1024];
+                            int len1 = 0;
+                            while ((len1 = inputStream.read(buffer)) > 0) {
+                                fos.write(buffer, 0, len1);
+                            }
+                            fos.close();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "Download success !!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{APP_FOLDER_URL + "/" + fileName}, new String[]{extension}, null);
+
+                        } else {
+                            Log.d(TAG, "run saveFile: responeseBody is null");
                         }
-                    });
-
-                    MediaScannerConnection.scanFile(getApplicationContext(), new String[]{APP_FOLDER_URL + "/" + fileName}, new String[]{extension}, null);
-
+                       } else {
+                        Log.d(TAG, "run saveFile: Content Type is null");
+                    }
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -143,83 +150,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-    public void initAppFolder() {
-        File folder = new File(Environment.getExternalStorageDirectory() +
-                File.separator + "FacebookStories");
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-    }
-
-    /**
-     * Handles the result of the request for permissions.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        // If request is cancelled, the result arrays are empty.
-        if (grantResults.length > 0) {
-            for (int i = 0; i < grantResults.length; i++) {
-                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                    postRequestPermissionsResult(requestCode, false);
-                    requestPermission();
-                    return;
-                }
-            }
-            initAppFolder();
-            postRequestPermissionsResult(requestCode, true);
-            return;
-        } else {
-            requestPermission();
-        }
-
-        postRequestPermissionsResult(requestCode, false);
-    }
-
-    public void requestPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                    this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                // If we should give explanation of requested permissions
-                // Show an alert dialog here with request explanation
-                showAlertOkCancel(R.string.permission_dialog_title, R.string.permission_camera_gallery, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ActivityCompat.requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                100);
-                    }
-                }, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        postRequestPermissionsResult(100, false);
-                    }
-                });
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        100);
-            }
-        }
-
-    }
-
-    protected void showAlertOkCancel(@StringRes int titleId
-            , @StringRes int messageId
-            , final DialogInterface.OnClickListener okClickListener
-            , final DialogInterface.OnClickListener cancelClickListener) {
-        new AlertDialog.Builder(this)
-                .setTitle(titleId)
-                .setMessage(messageId)
-                .setPositiveButton(android.R.string.ok, okClickListener)
-                .setNegativeButton(android.R.string.cancel, cancelClickListener)
-                .show();
-    }
-
-    protected void postRequestPermissionsResult(final int reqCd, final boolean result) {
-        Log.d("giangtm1", "postRequestPermissionsResult: reqCd=" + reqCd + ", result=" + result);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -232,12 +162,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.mniImageDownloaded:
-//                Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
-//                startActivity(myIntent);
-                Intent intent = new Intent();
-                intent.setAction(android.content.Intent.ACTION_VIEW);
-                intent.setType("image/*");
-                startActivity(intent);
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    requestPermission();
+                } else {
+                    rvLoading.setVisibility(View.VISIBLE);
+                    Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
+                    startActivityForResult(myIntent,1);
+                }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -245,13 +177,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1){
+            rvLoading.setVisibility(View.GONE);
+        }
+    }
     /* An instance of this class will be registered as a JavaScript interface */
 
     static class MyJavaScriptInterface {
         OnHandleCheckTypeToDownload onHandleCheckTypeToDownload;
         Context context;
 
-        public MyJavaScriptInterface(Context context, OnHandleCheckTypeToDownload onHandleCheckTypeToDownloadListener) {
+        MyJavaScriptInterface(Context context, OnHandleCheckTypeToDownload onHandleCheckTypeToDownloadListener) {
             this.onHandleCheckTypeToDownload = onHandleCheckTypeToDownloadListener;
             this.context = context;
         }
@@ -259,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         @SuppressWarnings("unused")
         public void processHTML(String url) {
-            Log.d("giangtm1", "processHTML: " + url);
+            Log.d(TAG, "processHTML: " + url);
             onHandleCheckTypeToDownload.onDownloading(url);
         }
 

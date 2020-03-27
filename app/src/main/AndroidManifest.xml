@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_iconapp"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".PreviewDownloadedActivity"></activity>
+        <activity android:name=".previewscreen.PreviewDownloadedActivity"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

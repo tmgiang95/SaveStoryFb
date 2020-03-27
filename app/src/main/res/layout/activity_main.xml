@@ -22,5 +22,17 @@
         android:layout_width="48dp"
         android:visibility="gone"
         android:layout_height="48dp"/>
+    <RelativeLayout
+        android:id="@+id/rvLoading"
+        android:background="@color/colorBlack20per"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ProgressBar
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
 
 </RelativeLayout>
