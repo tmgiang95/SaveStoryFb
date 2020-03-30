@@ -1,4 +1,4 @@
-package com.example.savestoryfb;
+package minhgiang.tmgiang.savestoryfb;
 
 public interface OnHandleCheckTypeToDownload {
     void onSuccessCheckStorySite(int type);

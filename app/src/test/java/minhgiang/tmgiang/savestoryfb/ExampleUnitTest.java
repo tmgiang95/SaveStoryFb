@@ -1,4 +1,4 @@
-package com.example.savestoryfb;
+package minhgiang.tmgiang.savestoryfb;
 
 import org.junit.Test;
 

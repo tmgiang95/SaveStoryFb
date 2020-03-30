@@ -1,11 +1,13 @@
-package com.example.savestoryfb;
+package minhgiang.tmgiang.savestoryfb;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -23,7 +25,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.example.savestoryfb.previewscreen.PreviewDownloadedActivity;
+import minhgiang.tmgiang.savestoryfb.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -172,9 +174,29 @@ public class MainActivity extends BaseActivity {
                     requestPermission();
                 } else {
                     rvLoading.setVisibility(View.VISIBLE);
-                    Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
-                    startActivityForResult(myIntent,1);
+//                    Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
+//                    startActivityForResult(myIntent,1);
+                    Intent intent = new Intent();
+                    intent.setAction(android.content.Intent.ACTION_VIEW);
+                    intent.setType("image/*");
+                    startActivityForResult(intent,1);
                 }
+
+            case R.id.mniRating:
+                Uri uri = Uri.parse("market://details?id=" + getApplicationContext().getPackageName());
+                Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                // To count with Play market backstack, After pressing back button,
+                // to taken back to our application, we need to add following flags to intent.
+                goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                        Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
+                        Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                try {
+                    startActivity(goToMarket);
+                } catch (ActivityNotFoundException e) {
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://play.google.com/store/apps/details?id=" + getApplicationContext().getPackageName())));
+                }
+
             default:
                 return super.onOptionsItemSelected(item);
         }

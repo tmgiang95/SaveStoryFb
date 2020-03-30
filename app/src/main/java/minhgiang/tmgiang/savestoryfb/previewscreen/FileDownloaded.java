@@ -1,4 +1,4 @@
-package com.example.savestoryfb.previewscreen;
+package minhgiang.tmgiang.savestoryfb.previewscreen;
 
 import android.graphics.Bitmap;
 

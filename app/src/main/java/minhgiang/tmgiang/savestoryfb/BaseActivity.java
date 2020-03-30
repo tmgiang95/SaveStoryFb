@@ -1,4 +1,4 @@
-package com.example.savestoryfb;
+package minhgiang.tmgiang.savestoryfb;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -11,6 +11,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import minhgiang.tmgiang.savestoryfb.R;
+
 
 import java.io.File;
 

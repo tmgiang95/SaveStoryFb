@@ -1,4 +1,4 @@
-package com.example.savestoryfb.previewscreen;
+package minhgiang.tmgiang.savestoryfb.previewscreen;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,7 +14,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.savestoryfb.R;
+import minhgiang.tmgiang.savestoryfb.R;
 
 import org.apache.commons.io.FilenameUtils;
 

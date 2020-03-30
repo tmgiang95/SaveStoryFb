@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.savestoryfb">
+    package="minhgiang.tmgiang.savestoryfb">
     <!-- add internet permission -->
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_iconapp"
+        android:icon="@mipmap/ic_app_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_iconapp"
+        android:roundIcon="@mipmap/ic_app_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".previewscreen.PreviewDownloadedActivity"></activity>
-        <activity android:name=".MainActivity">
+        <activity android:name="minhgiang.tmgiang.savestoryfb.previewscreen.PreviewDownloadedActivity"></activity>
+        <activity android:name="minhgiang.tmgiang.savestoryfb.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

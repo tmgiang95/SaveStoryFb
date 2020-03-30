@@ -1,15 +1,14 @@
-package com.example.savestoryfb.previewscreen;
+package minhgiang.tmgiang.savestoryfb.previewscreen;
 
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MenuItem;
 
-import com.example.savestoryfb.MainActivity;
-import com.example.savestoryfb.R;
+import minhgiang.tmgiang.savestoryfb.MainActivity;
+import minhgiang.tmgiang.savestoryfb.R;
 
 import java.io.File;
 import java.io.FilenameFilter;
