@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\giangtm1\\Documents\\upload-keystore.jks')
+            storeFile file('/home/vtk-giangtm1/Documents/upload-keystore.jks')
             storePassword '123456aA@'
             keyAlias = 'upload'
             keyPassword 'minhgiang25895'

@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import minhgiang.tmgiang.savestoryfb.previewscreen.PreviewDownloadedActivity;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -174,13 +176,15 @@ public class MainActivity extends BaseActivity {
                     requestPermission();
                 } else {
                     rvLoading.setVisibility(View.VISIBLE);
-//                    Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
-//                    startActivityForResult(myIntent,1);
-                    Intent intent = new Intent();
-                    intent.setAction(android.content.Intent.ACTION_VIEW);
-                    intent.setType("image/*");
-                    startActivityForResult(intent,1);
+                    Intent myIntent = new Intent(MainActivity.this, PreviewDownloadedActivity.class);
+                    startActivityForResult(myIntent,1);
+//                    Intent intent = new Intent();
+//                    intent.setAction(android.content.Intent.ACTION_VIEW);
+//                    intent.setType("image/*");
+//                    startActivityForResult(intent,1);
                 }
+
+                return super.onOptionsItemSelected(item) ;
 
             case R.id.mniRating:
                 Uri uri = Uri.parse("market://details?id=" + getApplicationContext().getPackageName());
@@ -196,6 +200,7 @@ public class MainActivity extends BaseActivity {
                     startActivity(new Intent(Intent.ACTION_VIEW,
                             Uri.parse("http://play.google.com/store/apps/details?id=" + getApplicationContext().getPackageName())));
                 }
+                return super.onOptionsItemSelected(item);
 
             default:
                 return super.onOptionsItemSelected(item);

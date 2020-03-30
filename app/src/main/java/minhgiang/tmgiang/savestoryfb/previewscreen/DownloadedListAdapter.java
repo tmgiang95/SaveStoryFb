@@ -7,6 +7,7 @@ import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +26,20 @@ import java.util.List;
 public class DownloadedListAdapter extends RecyclerView.Adapter<DownloadedListAdapter.DownloadedListViewHolder> {
     private List<FileDownloaded> fileList = new ArrayList<>();
     private Context context;
+    private OnClickGridviewListener onClickGridviewListener;
     public DownloadedListAdapter(Context context, List<FileDownloaded> fileList) {
         this.fileList = fileList;
         this.context = context;
+        this.onClickGridviewListener = new OnClickGridviewListener() {
+            @Override
+            public void onClick(FileDownloaded f) {
+
+            }
+        };
+    }
+
+    public void setOnClickGridviewListener(OnClickGridviewListener listener){
+        this.onClickGridviewListener = listener;
     }
 
     @NonNull
@@ -35,12 +47,14 @@ public class DownloadedListAdapter extends RecyclerView.Adapter<DownloadedListAd
     public DownloadedListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int position) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.layout_item_preview, parent, false);
+        int height = parent.getMeasuredHeight() / 4;
+        view.setMinimumHeight(height);
         return new DownloadedListViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull DownloadedListViewHolder holder, int position) {
-        FileDownloaded fileDownloaded = fileList.get(position);
+        final FileDownloaded fileDownloaded = fileList.get(position);
         File file = fileDownloaded.getFile();
         if (FilenameUtils.getExtension(file.getName()).equals("jpg") ||
                 FilenameUtils.getExtension(file.getName()).equals("jpeg") ||
@@ -79,9 +93,13 @@ public class DownloadedListAdapter extends RecyclerView.Adapter<DownloadedListAd
                         .into(holder.ivThumbnail);
 
             }
-
-
         }
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickGridviewListener.onClick(fileDownloaded);
+            }
+        });
     }
 
     @Override

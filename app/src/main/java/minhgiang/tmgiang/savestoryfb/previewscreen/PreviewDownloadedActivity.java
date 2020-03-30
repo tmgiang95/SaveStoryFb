@@ -1,5 +1,7 @@
 package minhgiang.tmgiang.savestoryfb.previewscreen;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,6 +45,15 @@ public class PreviewDownloadedActivity extends AppCompatActivity {
                 rvDownloaded.setAdapter(downloadedListAdapter);
                 int spacingInPixels = getResources().getDimensionPixelSize(R.dimen.spacing);
                 rvDownloaded.addItemDecoration(new SpacesItemDecoration(spacingInPixels));
+                downloadedListAdapter.setOnClickGridviewListener(new OnClickGridviewListener() {
+                    @Override
+                    public void onClick(FileDownloaded f) {
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.parse("file://" + f.getFile().getAbsolutePath()), "Image/*");
+                        startActivity(intent);
+                    }
+                });
             }
         }).start();
     }
